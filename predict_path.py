@@ -167,6 +167,7 @@ def predict_path(
     input_path: Path,
     output_path: Path
 ):
+    output_path.mkdir(exist_ok=True, parents=True)
     image_path = list(input_path.iterdir())
     for i, image_path in enumerate(image_path):
         output_file = output_path / image_path.name
