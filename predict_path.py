@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import json
 import pycocotools.mask as mask_util
+import torch
 
 from detectron2.config import get_cfg
 from detectron2.engine.defaults import DefaultPredictor
@@ -17,18 +18,12 @@ def export_json(instances: Instances, img_id: int, output_file: Path):
 
     json_data = []
     
-    scores = instances.scores.cpu().numpy() if instances.has("scores") else None
-    boxes = instances.pred_boxes.tensor.cpu().numpy() if instances.has("pred_boxes") else None
-    cat_ids = instances.pred_classes.cpu().numpy() if instances.has("pred_classes") else None
-    masks = instances.pred_masks.cpu().numpy() if instances.has("pred_masks") else None
-    keypoints = instances.pred_keypoints.cpu().numpy() if instances.has("pred_keypoints") else None
+    if instances.has("pred_boxes"):
+        boxes = BoxMode.convert(instances.pred_boxes.tensor, BoxMode.XYXY_ABS, BoxMode.XYWH_ABS)
     
-    if boxes is not None:
-        boxes = BoxMode.convert(boxes, BoxMode.XYXY_ABS, BoxMode.XYWH_ABS)
-    
-    if masks is not None:
+    if instances.has("pred_masks"):
         rles = [
-            mask_util.encode(np.array(mask[:, :, None], order="F", dtype="uint8"))[0]
+            mask_util.encode(np.array(mask.cpu()[:, :, None], order="F", dtype="uint8"))[0]
             for mask in instances.pred_masks
         ]
         for rle in rles:
@@ -36,16 +31,16 @@ def export_json(instances: Instances, img_id: int, output_file: Path):
 
     for i in range(len(instances)):
         instances_dict = {"image_id": img_id, "id": i}
-        if cat_ids is not None:
-            instances_dict["category_id"] = cat_ids[i].tolist()
-        if boxes is not None:
+        if instances.has("scores"):
+            instances_dict["score"] = float(instances.scores[i])
+        if instances.has("pred_boxes"):
             instances_dict["bbox"] = boxes[i].tolist() 
-        if scores is not None:
-            instances_dict["score"] = float(scores[i])
-        if masks is not None:
+        if instances.has("pred_classes"):
+            instances_dict["category_id"] = instances.pred_classes[i].tolist()
+        if instances.has("pred_masks"):
             instances_dict["segmentation"] = rles[i]
-        if keypoints is not None:
-           instances_dict["keypoints"] = keypoints[i]
+        if instances.has("pred_keypoints"):
+           instances_dict["keypoints"] = instances.pred_keypoints[i]
         
         json_data.append(instances_dict)
     
@@ -95,7 +90,7 @@ class Detectron2:
             Instances: The predicted instances.
         """        
         predictions = self._predictor(image)
-        return predictions["instances"]
+        return predictions["instances"].to("cpu")
         
     def _setup_cfg(self, config_path: str,
                    model_weights: str, use_cuda: bool = False):
@@ -111,9 +106,15 @@ class Detectron2:
         self.cfg.merge_from_file(str(config_path))
         self.cfg.MODEL.WEIGHTS = str(model_weights)
         if use_cuda:
-            self.cfg.MODEL.DEVICE = "cuda"
+            if torch.cuda.is_available():
+                self.cfg.MODEL.DEVICE = "cuda"
+                print(f"Cuda device: {torch.cuda.get_device_name(0)}")
+            else:
+                print(f"Cuda is not available!")
+                self.cfg.MODEL.DEVICE = "cpu"
         else:
             self.cfg.MODEL.DEVICE = "cpu"
+        print(f"Using device: {self.cfg.MODEL.DEVICE}")
         self.cfg.MODEL.RETINANET.SCORE_THRESH_TEST = self._conf_thr
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self._conf_thr
         self.cfg.MODEL.PANOPTIC_FPN.COMBINE.INSTANCES_CONFIDENCE_THRESH = self._conf_thr
@@ -167,8 +168,12 @@ def predict_path(
     input_path: Path,
     output_path: Path
 ):
+    print(f"Output path: {output_path}")
     output_path.mkdir(exist_ok=True, parents=True)
+    
     image_path = list(input_path.iterdir())
+    print(f"Image paths: {image_path}")
+
     for i, image_path in enumerate(image_path):
         output_file = output_path / image_path.name
         assert image_path != output_file
