@@ -7,7 +7,7 @@ wget https://github.com/edgarGracia/cidai_pigs/releases/download/pigs_0_all_det2
 
 echo "Processing input path"
 for d in /data/inputs/* ; do
-  unzip "$d/0" -d input;
+  unzip -o "$d/0" -d input;
   python cidai_pigs/predict_path.py -c config.yaml -w model.pth -i input -o "output/$d" --use-cuda;
   rm -r input;
 done
