@@ -12,18 +12,24 @@ from detectron2.data import MetadataCatalog
 from detectron2.structures.boxes import BoxMode
 from detectron2.structures.instances import Instances
 from detectron2.utils.visualizer import Visualizer, ColorMode
+from detectron2.utils.logger import setup_logger
+
+logger = setup_logger()
 
 
 def export_json(instances: Instances, img_id: int, output_file: Path):
-
     json_data = []
-    
+
     if instances.has("pred_boxes"):
-        boxes = BoxMode.convert(instances.pred_boxes.tensor, BoxMode.XYXY_ABS, BoxMode.XYWH_ABS)
-    
+        boxes = BoxMode.convert(
+            instances.pred_boxes.tensor, BoxMode.XYXY_ABS, BoxMode.XYWH_ABS
+        )
+
     if instances.has("pred_masks"):
         rles = [
-            mask_util.encode(np.array(mask.cpu()[:, :, None], order="F", dtype="uint8"))[0]
+            mask_util.encode(
+                np.array(mask.cpu()[:, :, None], order="F", dtype="uint8")
+            )[0]
             for mask in instances.pred_masks
         ]
         for rle in rles:
@@ -34,16 +40,16 @@ def export_json(instances: Instances, img_id: int, output_file: Path):
         if instances.has("scores"):
             instances_dict["score"] = float(instances.scores[i])
         if instances.has("pred_boxes"):
-            instances_dict["bbox"] = boxes[i].tolist() 
+            instances_dict["bbox"] = boxes[i].tolist()
         if instances.has("pred_classes"):
             instances_dict["category_id"] = instances.pred_classes[i].tolist()
         if instances.has("pred_masks"):
             instances_dict["segmentation"] = rles[i]
         if instances.has("pred_keypoints"):
-           instances_dict["keypoints"] = instances.pred_keypoints[i]
-        
+            instances_dict["keypoints"] = instances.pred_keypoints[i]
+
         json_data.append(instances_dict)
-    
+
     with open(output_file, "w") as f:
         json.dump(json_data, f)
 
@@ -53,13 +59,18 @@ class Detectron2:
 
     Methods:
         predict(np.ndarray) -> Instances
-    
+
     Attributes:
         dataset_metadata (detectron2.data.Metadata): The dataset metadata.
     """
 
-    def __init__(self, model_config: str, model_weights: str,
-                 confidence_threshold: float = 0.5, use_cuda: bool = False):
+    def __init__(
+        self,
+        model_config: str,
+        model_weights: str,
+        confidence_threshold: float = 0.5,
+        use_cuda: bool = False,
+    ):
         """Create and load a detectron2 model.
 
         Args:
@@ -75,9 +86,7 @@ class Detectron2:
         self._predictor = DefaultPredictor(self.cfg)
 
         self.dataset_metadata = MetadataCatalog.get(
-            self.cfg.DATASETS.TEST[0]
-            if len(self.cfg.DATASETS.TEST)
-            else "__unused"
+            self.cfg.DATASETS.TEST[0] if len(self.cfg.DATASETS.TEST) else "__unused"
         )
 
     def predict(self, image: np.ndarray) -> Instances:
@@ -88,12 +97,11 @@ class Detectron2:
 
         Returns:
             Instances: The predicted instances.
-        """        
+        """
         predictions = self._predictor(image)
         return predictions["instances"].to("cpu")
-        
-    def _setup_cfg(self, config_path: str,
-                   model_weights: str, use_cuda: bool = False):
+
+    def _setup_cfg(self, config_path: str, model_weights: str, use_cuda: bool = False):
         """Create the model cfg.
 
         Args:
@@ -108,13 +116,13 @@ class Detectron2:
         if use_cuda:
             if torch.cuda.is_available():
                 self.cfg.MODEL.DEVICE = "cuda"
-                print(f"Cuda device: {torch.cuda.get_device_name(0)}")
+                logger.info(f"Cuda device: {torch.cuda.get_device_name(0)}")
             else:
-                print(f"Cuda is not available!")
+                logger.warning(f"Cuda is not available!")
                 self.cfg.MODEL.DEVICE = "cpu"
         else:
             self.cfg.MODEL.DEVICE = "cpu"
-        print(f"Using device: {self.cfg.MODEL.DEVICE}")
+        logger.info(f"Using device: {self.cfg.MODEL.DEVICE}")
         self.cfg.MODEL.RETINANET.SCORE_THRESH_TEST = self._conf_thr
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self._conf_thr
         self.cfg.MODEL.PANOPTIC_FPN.COMBINE.INSTANCES_CONFIDENCE_THRESH = self._conf_thr
@@ -156,45 +164,38 @@ def get_parser():
         default=0.5,
         help="Minimum score for instance predictions to be shown",
     )
-    parser.add_argument(
-        "--use-cuda",
-        action="store_true"
-    )
+    parser.add_argument("--use-cuda", action="store_true")
     return parser
 
 
-def predict_path(
-    model: Detectron2,
-    input_path: Path,
-    output_path: Path
-):
-    print(f"Output path: {output_path}")
+def predict_path(model: Detectron2, input_path: Path, output_path: Path):
+    logger.info(f"Output path: {output_path}")
     output_path.mkdir(exist_ok=True, parents=True)
-    
+
     image_path = list(input_path.iterdir())
-    print(f"Image paths: {image_path}")
+    logger.info(f"Image paths: {image_path}")
 
     for i, image_path in enumerate(image_path):
         output_file = output_path / image_path.name
         assert image_path != output_file
-        print(f"{image_path} > {output_file}")
+        logger.info(f"{image_path} > {output_file}")
 
         # Predict
         image = cv2.imread(str(image_path))
         instances = model.predict(image)
-        
+
         # Export JSON
         export_json(
             instances=instances,
             img_id=i,
-            output_file=output_path / (image_path.stem + ".json")
+            output_file=output_path / (image_path.stem + ".json"),
         )
 
         # Visualize instances
         visualizer = Visualizer(
             cv2.cvtColor(image, cv2.COLOR_BGR2RGB),
             metadata=model.dataset_metadata,
-            instance_mode=ColorMode.IMAGE
+            instance_mode=ColorMode.IMAGE,
         )
         visualizer.draw_instance_predictions(instances)
         visualizer.get_output().save(str(output_file))
@@ -207,7 +208,7 @@ if __name__ == "__main__":
         Path(args.config),
         Path(args.weights),
         confidence_threshold=args.confidence_threshold,
-        use_cuda=args.use_cuda
+        use_cuda=args.use_cuda,
     )
 
     predict_path(det2, args.input, args.output)
