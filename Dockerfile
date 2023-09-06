@@ -1,8 +1,11 @@
-# Ubuntu 20.04 | cuda 11.2 | cudnn 8 | Python 3.9 | tensorflow 2.7.0 | torch 1.8.1 | detectron2
-FROM nvidia/cuda:11.2.0-cudnn8-devel-ubuntu20.04
+# Ubuntu 20.04 | Python 3.8 | torch 1.10 | CPU
+FROM ubuntu:20.04
+
+# Set non interactive
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get -y upgrade
-RUN apt-get install -y curl git wget ninja-build nano sudo ca-certificates build-essential zip unzip
+RUN apt-get install -y curl git wget ninja-build nano sudo ca-certificates build-essential ffmpeg libsm6 libxext6 zip unzip
 
 # Create a non-root user
 ARG USER_ID=1000
@@ -14,27 +17,28 @@ WORKDIR /home/user
 # Enable color prompt
 RUN sed -i '/#force_color_prompt=yes/c\force_color_prompt=yes' /home/user/.bashrc
 
-# Install Python 3.9
-RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
+# Install Python 3.8
+RUN sudo apt-get install -y software-properties-common
 RUN sudo add-apt-repository --yes ppa:deadsnakes/ppa
-RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3.9 python3.9-distutils python3.9-dev python3.9-venv
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.9
+RUN sudo apt-get install -y python3.8 python3.8-distutils python3.8-dev python3.8-venv
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.8
 RUN export PATH=/home/user/.local/bin:$PATH
 
 # Change the default python version
-RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
-RUN sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
-RUN sudo update-alternatives --set python /usr/bin/python3.9
-RUN sudo update-alternatives --set python3 /usr/bin/python3.9
+RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
+RUN sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+RUN sudo update-alternatives --set python /usr/bin/python3.8
+RUN sudo update-alternatives --set python3 /usr/bin/python3.8
 
 # Install dependencies
 RUN python -m pip install --upgrade pip
 RUN python -m pip install --upgrade setuptools
-COPY ./requirements.txt /home/user/requirements.txt
-RUN python -m pip install -r /home/user/requirements.txt
+RUN python -m pip install torch==1.10.0+cpu torchvision==0.11.0+cpu torchaudio==0.10.0 -f https://download.pytorch.org/whl/torch_stable.html
+RUN python -m pip install matplotlib==3.5.1 PyYAML==6.0 opencv-python-headless==4.6.0.66 loguru==0.6.0 seaborn==0.12.2
+RUN python -m pip install tensorboard cmake onnx tqdm cython pycocotools Pillow==9.5.0
+
+# Set path
+ENV PATH="${PATH}:/home/user/.local/bin"
 
 # Install detectron2
-RUN python -m pip install --user 'git+https://github.com/facebookresearch/fvcore'
-RUN git clone https://github.com/facebookresearch/detectron2 detectron2
-RUN git -C detectron2 checkout tags/v0.6
-RUN python -m pip install --user -e detectron2
+RUN python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.10/index.html
