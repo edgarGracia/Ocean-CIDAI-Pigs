@@ -1,15 +1,17 @@
-# CIDAI Pigs
+# Ocean CIDAI Pigs
+
+This repository contains the needed code to publish a pig detector in an Ocean Protocol marketplace.    
 
 ## Instructions to build the Docker image:
 1. Clone the repo:
     
-    ```git clone ```
-2. Download the model and configuration from the repo [releases]() and place it on ```model/```. E.g.
+    ```git clone https://github.com/edgarGracia/Ocean-CIDAI-Pigs.git```
+2. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
 
     ```
-    wget https://github.com/edgarGracia/cidai_pigs/releases/download/pigs_0_all_det2/Base-RCNN-FPN.yaml -O model/
-    wget https://github.com/edgarGracia/cidai_pigs/releases/download/pigs_0_all_det2/config.yaml -O model/
-    wget https://github.com/edgarGracia/cidai_pigs/releases/download/pigs_0_all_det2/model.pth -O model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/Base-RCNN-FPN.yaml -O model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/config.yaml -O model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/model.pth -O model/
     ```
 
 3. Build the Docker image:
@@ -17,9 +19,31 @@
     ```docker build -t <docker_user>/<repo_name>:<image_tag> .```
 
 ## Test the algorithm locally
-1. Create the test directories and data:
+1. Create the test directories:
 
-    ```mkdir ```
+    ```
+    cd Ocean-CIDAI-Pigs/test
+    mkdir data
+    mkdir data/inputs
+    mkdir data/outputs
+    mkdir data/inputs/1234
+    ```
+
+2. Copy the test data. It must be a zip file with images inside:
+
+    ```cp /path/to/images.zip data/inputs/1234/0```
+
+3. Run the previously created docker image or one from the [Docker Hub]():
+    ```
+    docker run --rm \
+        -v "$(pwd)/data/inputs":/data/inputs \
+        -v "$(pwd)/data/outputs":/data/outputs \
+        -v "$(pwd)/../entry_point.sh":/data/transformations/algorithm \
+        -e DIDS='["1234"]' \
+        <docker_image> bash /data/transformations/algorithm
+    ```
+
+4. The output data should be saved in ```data/outputs/output.zip```
 
 ## Publish the algorithm on an Ocean Protocol marketplace (E.g. [Pontus-X](https://portal.pontus-x.eu/))
 1. Push the Docker image to [Docker Hub](https://hub.docker.com/):
