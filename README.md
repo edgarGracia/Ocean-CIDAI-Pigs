@@ -58,7 +58,8 @@ This repository contains the needed code to publish a pig detector in an Ocean P
 2. Go to the marketplace and publish an asset:
     - Under "Metadata":
         - Set the "Asset Type" to "Algorithm"
-        - In the "Docker Image" field set the name of the previously pushed image
+        - In the "Docker Image" field select "Custom" and set the name of the previously pushed image
+        - In the "Docker Image Entrypoint" field set "bash $ALGO"
     - Under "Access":
         - Select "URL" for the "File" field and paste the URL to the raw Github code of the entry point script. (E.g. https://raw.githubusercontent.com/edgarGracia/cidai_pigs/main/entry_point.sh)
 
