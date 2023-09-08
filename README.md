@@ -5,18 +5,23 @@ This repository contains the needed code to publish a pig detector in an Ocean P
 ## Instructions to build the Docker image:
 1. Clone the repo:
     
-    ```git clone https://github.com/edgarGracia/Ocean-CIDAI-Pigs.git```
-2. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
+    ```
+    git clone https://github.com/edgarGracia/Ocean-CIDAI-Pigs.git
+    cd Ocean-CIDAI-Pigs
+    ```
+3. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
 
     ```
-    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/Base-RCNN-FPN.yaml -O model/
-    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/config.yaml -O model/
-    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/model.pth -O model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/Base-RCNN-FPN.yaml -P model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/config.yaml -P model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/model.pth -P model/
     ```
 
-3. Build the Docker image:
+4. Build the Docker image:
 
-    ```docker build -t <docker_user>/<repo_name>:<image_tag> .```
+    ```
+    docker build -t <docker_user>/<repo_name>:<image_tag> .
+    ```
 
 ## Test the algorithm locally
 1. Create the test directories:
@@ -33,7 +38,7 @@ This repository contains the needed code to publish a pig detector in an Ocean P
 
     ```cp /path/to/images.zip data/inputs/1234/0```
 
-3. Run the previously created docker image or one from the [Docker Hub]():
+3. Run the previously created docker image or one from the [Docker Hub](https://hub.docker.com/repository/docker/egracia/ocean_cidai_pigs/):
     ```
     docker run --rm \
         -v "$(pwd)/data/inputs":/data/inputs \
@@ -55,9 +60,9 @@ This repository contains the needed code to publish a pig detector in an Ocean P
         - Set the "Asset Type" to "Algorithm"
         - In the "Docker Image" field set the name of the previously pushed image
     - Under "Access":
-        - Select "URL" for the "File" field and paste the URL to the raw Github code of the entry point script (https://raw.githubusercontent.com/edgarGracia/cidai_pigs/main/entry_point.sh)
+        - Select "URL" for the "File" field and paste the URL to the raw Github code of the entry point script. (E.g. https://raw.githubusercontent.com/edgarGracia/cidai_pigs/main/entry_point.sh)
 
 
+---
 
-
-Published Docker images: [https://hub.docker.com/repository/docker/egracia/cidai_pigs/general](https://hub.docker.com/repository/docker/egracia/cidai_pigs/general)
+The published Docker images can be found at: [https://hub.docker.com/repository/docker/egracia/ocean_cidai_pigs/](https://hub.docker.com/repository/docker/egracia/ocean_cidai_pigs/)
