@@ -1,7 +1,7 @@
 echo "Processing input path"
 jq -r '.[]' <(echo $DIDS) | while read did; do
   unzip -o "/data/inputs/$did/0" -d /workdir/input;
-  python /workdir/src/predict_path.py -c /workdir/model/config.yaml -w /workdir/model/model.pth -i /workdir/input -o "/workdir/output/$did";
+  yolo segment predict model=/workdir/model/model.pt source=/workdir/input save=True save_txt=True project=/workdir/output/ name="$did" retina_masks=True;
   rm -r /workdir/input;
 done
 
