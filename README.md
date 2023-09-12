@@ -25,22 +25,20 @@ This repository contains the needed code to publish a pig detector in an Ocean P
 1. Create the test directories:
 
     ```
-    mkdir test
-    mkdir data
-    mkdir data/inputs
-    mkdir data/outputs
-    mkdir data/inputs/1234
+    mkdir -p test/data/inputs
+    mkdir -p test/data/outputs
+    mkdir -p test/data/inputs/1234
     ```
 
 2. Copy the test data. It must be a zip file with images inside:
 
-    ```cp /path/to/images.zip data/inputs/1234/0```
+    ```cp /path/to/images.zip test/data/inputs/1234/0```
 
 3. Run the previously created docker image or one from the [Docker Hub](https://hub.docker.com/repository/docker/egracia/ocean_cidai_pigs/):
     ```
     docker run --rm \
-        -v "$(pwd)/data/inputs":/data/inputs \
-        -v "$(pwd)/data/outputs":/data/outputs \
+        -v "$(pwd)/test/data/inputs":/data/inputs \
+        -v "$(pwd)/test/data/outputs":/data/outputs \
         -v "$(pwd)/entry_point.sh":/data/transformations/algorithm \
         -e DIDS='["1234"]' \
         <docker_image> bash /data/transformations/algorithm
