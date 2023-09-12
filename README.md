@@ -1,6 +1,6 @@
 # Ocean CIDAI Pigs
 
-This repository contains the needed code to publish a pig detector in an Ocean Protocol marketplace.    
+This repository contains the needed code to publish a pig detector in an Ocean Protocol marketplace.
 
 ## Instructions to build the Docker image:
 1. Clone the repo:
@@ -12,9 +12,7 @@ This repository contains the needed code to publish a pig detector in an Ocean P
 3. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
 
     ```
-    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/Base-RCNN-FPN.yaml -P model/
-    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/config.yaml -P model/
-    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/model.pth -P model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_yolov8n-seg/model.pt -P model/
     ```
 
 4. Build the Docker image:
@@ -27,7 +25,7 @@ This repository contains the needed code to publish a pig detector in an Ocean P
 1. Create the test directories:
 
     ```
-    cd Ocean-CIDAI-Pigs/test
+    mkdir test
     mkdir data
     mkdir data/inputs
     mkdir data/outputs
@@ -43,7 +41,7 @@ This repository contains the needed code to publish a pig detector in an Ocean P
     docker run --rm \
         -v "$(pwd)/data/inputs":/data/inputs \
         -v "$(pwd)/data/outputs":/data/outputs \
-        -v "$(pwd)/../entry_point.sh":/data/transformations/algorithm \
+        -v "$(pwd)/entry_point.sh":/data/transformations/algorithm \
         -e DIDS='["1234"]' \
         <docker_image> bash /data/transformations/algorithm
     ```
