@@ -1,6 +1,6 @@
 # Ocean CIDAI Pigs
 
-This repository contains the needed code to publish a pig detector in an Ocean Protocol marketplace.
+This repository contains the needed code to publish a pig detector & tracker in an Ocean Protocol marketplace.
 
 ## Instructions to build the Docker image:
 1. Clone the repo:
@@ -8,14 +8,18 @@ This repository contains the needed code to publish a pig detector in an Ocean P
     ```
     git clone https://github.com/edgarGracia/Ocean-CIDAI-Pigs.git
     cd Ocean-CIDAI-Pigs
+    git checkout YOLOv8_NTracker
     ```
-3. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
+
+1. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
 
     ```
     wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_yolov8n-seg/model.pt -P model/
     ```
 
-4. Build the Docker image:
+1. Download NTracker to ``src/``
+
+1. Build the Docker image:
 
     ```
     docker build -t <docker_user>/<repo_name>:<image_tag> .
