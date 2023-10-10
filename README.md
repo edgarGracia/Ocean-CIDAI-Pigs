@@ -13,7 +13,7 @@ This repository contains the needed code to publish a pig detector in an Ocean P
 
     ```
     wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/Base-RCNN-FPN.yaml -P model/
-    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/config.yaml -P model/
+    wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/config_cuda.yaml
     wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/model.pth -P model/
     ```
 
