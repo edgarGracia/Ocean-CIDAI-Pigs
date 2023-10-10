@@ -164,7 +164,10 @@ def get_parser():
         default=0.5,
         help="Minimum score for instance predictions to be shown",
     )
-    parser.add_argument("--use-cuda", action="store_true")
+    parser.add_argument(
+        "--use-cuda",
+        action="store_true"
+    )
     return parser
 
 

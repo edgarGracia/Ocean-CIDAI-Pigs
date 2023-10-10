@@ -43,6 +43,7 @@ This repository contains the needed code to publish a pig detector in an Ocean P
         -v "$(pwd)/test/data/outputs":/data/outputs \
         -v "$(pwd)/entry_point.sh":/data/transformations/algorithm \
         -e DIDS='["1234"]' \
+        --gpus all \
         <docker_image> bash /data/transformations/algorithm
     ```
 
