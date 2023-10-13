@@ -9,7 +9,7 @@ This repository contains the needed code to publish a pig detector in an Ocean P
     git clone https://github.com/edgarGracia/Ocean-CIDAI-Pigs.git
     cd Ocean-CIDAI-Pigs
     ```
-3. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
+1. Download the model and configuration from the repo [releases](https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases) and place it on ```model/```. E.g.
 
     ```
     wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/Base-RCNN-FPN.yaml -P model/
@@ -17,7 +17,9 @@ This repository contains the needed code to publish a pig detector in an Ocean P
     wget https://github.com/edgarGracia/Ocean-CIDAI-Pigs/releases/download/pigs_0_all_det2/model.pth -P model/
     ```
 
-4. Build the Docker image:
+1. Download NTracker to ``src/``
+
+1. Build the Docker image:
 
     ```
     docker build -t <docker_user>/<repo_name>:<image_tag> .
@@ -32,11 +34,11 @@ This repository contains the needed code to publish a pig detector in an Ocean P
     mkdir -p test/data/inputs/1234
     ```
 
-2. Copy the test data. It must be a zip file with images inside:
+1. Copy the test data. It must be a zip file with images inside:
 
     ```cp /path/to/images.zip test/data/inputs/1234/0```
 
-3. Run the previously created docker image or one from the [Docker Hub](https://hub.docker.com/repository/docker/egracia/ocean_cidai_pigs/):
+1. Run the previously created docker image or one from the [Docker Hub](https://hub.docker.com/repository/docker/egracia/ocean_cidai_pigs/):
     ```
     docker run --rm \
         -v "$(pwd)/test/data/inputs":/data/inputs \
@@ -47,14 +49,14 @@ This repository contains the needed code to publish a pig detector in an Ocean P
         <docker_image> bash /data/transformations/algorithm
     ```
 
-4. The output data should be saved in ```data/outputs/output.zip```
+1. The output data should be saved in ```data/outputs/output.zip```
 
 ## Publish the algorithm on an Ocean Protocol marketplace (E.g. [Pontus-X](https://portal.pontus-x.eu/))
 1. Push the Docker image to [Docker Hub](https://hub.docker.com/):
 
     ```docker push <docker_user>/<repo_name>:<image_tag>```
 
-2. Go to the marketplace and publish an asset:
+1. Go to the marketplace and publish an asset:
     - Under "Metadata":
         - Set the "Asset Type" to "Algorithm"
         - In the "Docker Image" field select "Custom" and set the name of the previously pushed image

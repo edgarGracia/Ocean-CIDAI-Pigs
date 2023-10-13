@@ -18,10 +18,18 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
 RUN update-alternatives --set python /usr/bin/python3.9
 RUN update-alternatives --set python3 /usr/bin/python3.9
 
+# Create a non-root user
+ARG USER_ID=1000
+RUN useradd -m --no-log-init --system --uid ${USER_ID} user -g sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+ENV PATH="/home/user/.local/bin:$PATH"
+USER user
+WORKDIR /home/user
+
 # Install python dependencies
 RUN python -m pip install --upgrade pip
 RUN python -m pip install --upgrade setuptools
-RUN python -m pip install opencv-python-headless Pillow==9.3.0
+RUN python -m pip install opencv-python-headless hydra-core==1.3 scipy==1.10.1 Pillow==9.3.0 tqdm hydra_colorlog Cython gdown ffmpeg-python pandas==2.1.1 seaborn==0.13.0
 
 # Install Torch
 RUN pip install torch==1.8.1+cu101 torchvision==0.9.1+cu101 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
@@ -29,7 +37,15 @@ RUN pip install torch==1.8.1+cu101 torchvision==0.9.1+cu101 torchaudio==0.8.1 -f
 # Install Detectron2
 RUN python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu101/torch1.8/detectron2-0.6%2Bcu101-cp39-cp39-linux_x86_64.whl
 
+# Install deep-person-reid
+RUN git clone https://github.com/KaiyangZhou/deep-person-reid.git
+RUN python -m pip install -e deep-person-reid/
+
 # Copy the source code and model
 WORKDIR /workdir
-ADD model model
-ADD src src
+COPY model model
+COPY src src
+
+# Install NTracker
+RUN sudo chown -R user /workdir/src
+RUN python -m pip install -e /workdir/src/NTracker
