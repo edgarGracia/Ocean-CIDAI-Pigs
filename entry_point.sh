@@ -1,3 +1,4 @@
+sudo chmod -R +rw /data
 echo "Processing input path"
 jq -r '.[]' <(echo $DIDS) | while read did; do
   unzip -o "/data/inputs/$did/0" -d /workdir/input;
