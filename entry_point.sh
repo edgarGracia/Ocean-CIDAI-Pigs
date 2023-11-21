@@ -1,4 +1,4 @@
-sudo chmod -R u+rwx /data
+sudo setfacl -m u:$USER:rwx /data
 echo "Processing input path"
 jq -r '.[]' <(echo $DIDS) | while read did; do
   unzip -o "/data/inputs/$did/0" -d /workdir/input;
